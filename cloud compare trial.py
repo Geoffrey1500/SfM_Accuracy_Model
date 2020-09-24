@@ -35,7 +35,27 @@ def tree_build(x_, y_):
     return data_sets_, tree_save_
 
 
-def neighbor_search_(data_, tree_, threshold_value):
+def neighbor_search_(data_, data_x, tree_, threshold_value=2, i_=1):
+    tree_copy_ = pickle.loads(tree_)
+    dist_, ind_ = tree_copy_.query(data_[i_].reshape(1, -1), k=1)
+    dist_enlonged = dist_[0][0]*threshold_value
+    print(dist_enlonged)
+    ind_updated_ = tree_copy_.query_radius(data_[i_].reshape(1, -1), r=dist_enlonged)[0]
+    print(ind_updated_)
+    print(ind_updated_.astype(np.int32))
+    print(type(ind_updated_.astype(np.int32)))
+    print(ind_updated_.astype(np.int32).tolist())
+    neighbor_count = tree_copy_.query_radius(data_[i_].reshape(1, -1), r=dist_enlonged, count_only=True)
+
+    neighbor_set_ = data_x[ind_updated_.astype(np.int32).tolist()]
+    print(type(neighbor_count))
+    print(neighbor_count)
+
+    print("The total number of included neighbor is: {}".format(str(neighbor_count[0])))
+    return neighbor_set_
+
+
+def dis_to_surface_():
     pass
 
 
@@ -48,9 +68,28 @@ data2, tree_2 = tree_build(x2, y2)
 x3, y3 = add_noise(x, y, 0, 0.05)
 data3, tree_3 = tree_build(x3, y3)
 
-dist, ind = pickle.loads(tree_2).query(data3[:1], k=1)
+index_num = 50
+
+dist, ind = pickle.loads(tree_2).query(data3[index_num].reshape(1, -1), k=1)
 print(ind)
 print(dist)
+
+
+xxx = neighbor_search_(data3, data2, tree_2, i_=index_num)
+print(len(xxx))
+print(xxx)
+print(data3[index_num])
+print(xxx[:, 0])
+
+plt.scatter(xxx[:, 0], xxx[:, -1], c="b")
+plt.scatter(data3[index_num][0], data3[index_num][-1], c='r')
+
+popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
+print(popt_2)
+error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
+print(np.average(error_2), np.std(error_2))
+plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
+plt.show()
 
 #
 # popt_2, pcov_2 = curve_fit(func, x2, y2)
