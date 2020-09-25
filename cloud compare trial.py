@@ -69,7 +69,7 @@ data2, tree_2 = tree_build(x2, y2)
 x3, y3 = add_noise(x, y, 0, 0.05)
 data3, tree_3 = tree_build(x3, y3)
 
-index_num = 50
+index_num = 300
 
 dist, ind = pickle.loads(tree_2).query(data3[index_num].reshape(1, -1), k=1)
 print(ind)
@@ -91,7 +91,7 @@ popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
 print(popt_2, type(popt_2))
 print(popt_2)
 error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
-print(np.average(error_2), np.std(error_2))
+print(np.average(error_2), np.std(error_2), "xxxxxxx")
 plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
 plt.axis('equal')
 plt.show()
@@ -99,15 +99,17 @@ plt.show()
 xxx_min, xxx_max = np.min(xxx[:, 0]), np.max(xxx[:, 0])
 yyy_min, yyy_max = np.min(xxx[:, 1]), np.max(xxx[:, 1])
 
+print(xxx_min, xxx_max, yyy_min, yyy_max)
+
 fun_X = lambda x_x: np.sqrt((x_x[0] - data3[index_num][0])**2 + (x_x[1] - data3[index_num][1])**2)
 
-cons = ({'type': 'eq', 'fun': lambda x_x: x_x[1] - popt_2[0]*np.sin(x_x[0]) - popt_2[1]}, # xyz=1
-        {'type': 'ineq', 'fun': lambda x_x: x_x[0] - xxx_min}, # x>=e，即 x > 0
+cons = ({'type': 'eq', 'fun': lambda x_x: -x_x[1] + popt_2[0]*np.sin(x_x[0]) + popt_2[1]}, # xyz=1
+        {'type': 'ineq', 'fun': lambda x_x: x_x[0] - xxx_min},
         {'type': 'ineq', 'fun': lambda x_x: xxx_max - x_x[0]},
         {'type': 'ineq', 'fun': lambda x_x: x_x[1] - yyy_min},
         {'type': 'ineq', 'fun': lambda x_x: yyy_max - x_x[1]}
        )
-x0 = np.array((0.6, 0.6))
+x0 = np.array((np.average(xxx[:, 0]), np.average(xxx[:, 1])))
 res = minimize(fun_X, x0, method='SLSQP', constraints=cons)
 print('最小值：', res.fun)
 print('最优解：',res.x)

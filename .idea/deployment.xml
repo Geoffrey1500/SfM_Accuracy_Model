@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="hong@10.7.48.201:22 password" remoteFilesAllowedToDisappearOnAutoupload="false" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="hong@10.7.48.201:22" remoteFilesAllowedToDisappearOnAutoupload="false" autoUploadExternalChanges="true">
     <serverData>
+      <paths name="hong@10.7.48.201:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/hong/pycharm project/SfM_Accuracy_Model" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="hong@10.7.48.201:22 password">
         <serverdata>
           <mappings>
