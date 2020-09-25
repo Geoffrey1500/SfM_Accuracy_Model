@@ -10,8 +10,10 @@ def add_noise(x_, y_, mu_=0, sigma_=0.001):
     x_internal = x_.copy()
     y_internal = y_.copy()
     for i_ in range(x_internal.size):
-        x_internal[i_] += np.random.normal(mu_, sigma_)
-        y_internal[i_] += np.random.normal(mu_, sigma_)
+        L_ = np.random.normal(mu_, sigma_)
+        x_internal[i_] -= L_*np.cos(x_internal[i_])/np.sqrt(np.cos(x_internal[i_])**2 + 1)
+        y_internal[i_] += L_/np.sqrt(np.cos(x_internal[i_])**2 + 1)
+        # print(L_, L_*np.cos(x_internal[i_])/np.sqrt(np.cos(x_internal[i_])**2 + 1), L_/np.sqrt(np.cos(x_internal[i_])**2 + 1))
 
     return x_internal, y_internal
 
@@ -44,14 +46,14 @@ def neighbor_search_(data_a, data_b, tree_b, threshold_value=2, i_=1):
     ind_updated_ = tree_copy_.query_radius(data_a[i_].reshape(1, -1), r=dist_enlonged)[0]
     neighbor_set_ = data_b[ind_updated_.astype(np.int32).tolist()]
 
-    print("The total number of included neighbor is: {}".format(str(len(neighbor_set_))))
+    # print("The total number of included neighbor is: {}".format(str(len(neighbor_set_))))
 
     return neighbor_set_
 
 
 def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
     if len(neighbor_set_) <= 2:
-        print("Too less")
+        # print("Too less")
         pass
     else:
         neighbor_x_min, neighbor_x_max = np.min(neighbor_set_[:, 0]), np.max(neighbor_set_[:, 0])
@@ -67,54 +69,63 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
                 )
         cor_innitial_ = np.array((np.average(neighbor_set_[:, 0]), np.average(neighbor_set_[:, 1])))
         dist_calculted = minimize(dis_fun_, cor_innitial_, method='SLSQP', constraints=cons_)
-        print('最小值：', dist_calculted.fun)
-        print('最优解：', dist_calculted.x)
-        print('迭代终止是否成功：', dist_calculted.success)
-        print('迭代终止原因：', dist_calculted.message)
+        # print('最小值：', dist_calculted.fun)
+        # print('最优解：', dist_calculted.x)
+        # print('迭代终止是否成功：', dist_calculted.success)
+        # print('迭代终止原因：', dist_calculted.message)
 
         return dist_calculted.fun
 
 
-x = np.linspace(0, 2*np.pi, 500)
+x = np.linspace(0, 2*np.pi, 5000)
 y = np.sin(x)
 data1, tree_1 = tree_build(x, y)
 
-x2, y2 = add_noise(x, y, 0, 0.005)
+x2, y2 = add_noise(x, y, 0, 0.01)
 data2, tree_2 = tree_build(x2, y2)
-x3, y3 = add_noise(x, y, 0, 0.05)
+x3, y3 = add_noise(x, y, 0, 0.03)
 data3, tree_3 = tree_build(x3, y3)
 
-index_num = 300
+# index_num = 300
 
-xxx = neighbor_search_(data3, data2, tree_2, i_=index_num)
-print(type(xxx))
-print(data3[index_num])
+dis_var_set = []
 
-ax = plt.gca()
-ax.set_aspect(1)
+for i_x_i in range(len(data3)):
+    xxx = neighbor_search_(data3, data2, tree_2, i_=i_x_i)
+    if len(xxx) <= 2:
+        # print("The total number of neighbors is less than 2")
+        pass
+    else:
+        # ax = plt.gca()
+        # ax.set_aspect(1)
+        # plt.scatter(xxx[:, 0], xxx[:, -1], c="b")
+        # plt.scatter(data3[i_x_i][0], data3[i_x_i][-1], c='r')
 
-plt.scatter(xxx[:, 0], xxx[:, -1], c="b")
-plt.scatter(data3[index_num][0], data3[index_num][-1], c='r')
+        popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
+        # print(popt_2)
+        #
+        # error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
+        # print(np.average(error_2), np.std(error_2), "error")
+        # plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
+        # plt.show()
 
-popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
-print(popt_2, type(popt_2))
+        dis = dis_to_surface_(xxx, data3, popt_2, i_=i_x_i)
+        # print(dis, type(dis))
+        dis_var_set.append(dis)
 
-error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
-print(np.average(error_2), np.std(error_2), "error")
-plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
+dis_var_set = np.array(dis_var_set)
+print(np.sqrt(np.sum(dis_var_set**2)/len(dis_var_set)))
+print(np.std(dis_var_set), np.average(dis_var_set), len(dis_var_set))
+# print(dis_var_set)
 
-plt.show()
-
-dis = dis_to_surface_(xxx, data3, popt_2, i_=index_num)
-print(dis, type(dis))
-
-# popt_2, pcov_2 = curve_fit(func, x2, y2)
+popt_2, pcov_2 = curve_fit(func, x2, y2)
 # print(popt_2)
 # error_2 = func(x2, *popt_2)-y2
 # perr_2 = np.sqrt(np.diag(pcov_2))
 # print(np.average(error_2), np.std(error_2), perr_2)
 # print(pcov_2)
-# popt_3, pcov_3 = curve_fit(func, x3, y3)
+popt_8, pcov_8 = curve_fit(func, x3, y3)
+print(popt_8, "参数")
 # print(popt_3)
 # error_3 = func(x3, *popt_2)-y3
 # perr_3 = np.sqrt(np.diag(pcov_3))
@@ -124,11 +135,11 @@ print(dis, type(dis))
 #
 # plt.scatter(x, y, s=2, c='r')
 # plt.show()
-# plt.scatter(x2, y2, s=2, c='r')
-# plt.plot(x2, func(x2, *popt_2), c="black")
-#
-# plt.show()
-# plt.scatter(x3, y3, s=2, c='b')
-# plt.plot(x3, func(x3, *popt_3), c="black")
-# plt.show()
+plt.scatter(x2, y2, s=2, c='r')
+plt.plot(x, func(x, *popt_2), c="black")
+
+plt.show()
+plt.scatter(x3, y3, s=2, c='b')
+plt.plot(x, func(x, *popt_8), c="black")
+plt.show()
 
