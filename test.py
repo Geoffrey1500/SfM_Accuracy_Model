@@ -36,23 +36,18 @@ def tree_build(x_, y_):
     return data_sets_, tree_save_
 
 
-def neighbor_search_(data_, data_x, tree_, threshold_value=2, i_=1):
-    tree_copy_ = pickle.loads(tree_)
-    dist_, ind_ = tree_copy_.query(data_[i_].reshape(1, -1), k=1)
+def neighbor_search_(data_a, data_b, tree_b, threshold_value=2, i_=1):
+    tree_copy_ = pickle.loads(tree_b)
+    dist_, ind_ = tree_copy_.query(data_a[i_].reshape(1, -1), k=1)
     dist_enlonged = dist_[0][0]*threshold_value
-    print(dist_enlonged)
-    ind_updated_ = tree_copy_.query_radius(data_[i_].reshape(1, -1), r=dist_enlonged)[0]
-    print(ind_updated_)
-    print(ind_updated_.astype(np.int32))
-    print(type(ind_updated_.astype(np.int32)))
-    print(ind_updated_.astype(np.int32).tolist())
-    neighbor_count = tree_copy_.query_radius(data_[i_].reshape(1, -1), r=dist_enlonged, count_only=True)
 
-    neighbor_set_ = data_x[ind_updated_.astype(np.int32).tolist()]
-    print(type(neighbor_count))
-    print(neighbor_count)
+    ind_updated_ = tree_copy_.query_radius(data_a[i_].reshape(1, -1), r=dist_enlonged)[0]
+    neighbor_count = tree_copy_.query_radius(data_a[i_].reshape(1, -1), r=dist_enlonged, count_only=True)
+
+    neighbor_set_ = data_b[ind_updated_.astype(np.int32).tolist()]
 
     print("The total number of included neighbor is: {}".format(str(neighbor_count[0])))
+
     return neighbor_set_
 
 
@@ -89,11 +84,11 @@ plt.scatter(data3[index_num][0], data3[index_num][-1], c='r')
 
 popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
 print(popt_2, type(popt_2))
-print(popt_2)
+
 error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
 print(np.average(error_2), np.std(error_2), "xxxxxxx")
 plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
-plt.axis('equal')
+
 plt.show()
 
 xxx_min, xxx_max = np.min(xxx[:, 0]), np.max(xxx[:, 0])
