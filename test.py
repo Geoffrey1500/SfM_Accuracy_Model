@@ -42,17 +42,37 @@ def neighbor_search_(data_a, data_b, tree_b, threshold_value=2, i_=1):
     dist_enlonged = dist_[0][0]*threshold_value
 
     ind_updated_ = tree_copy_.query_radius(data_a[i_].reshape(1, -1), r=dist_enlonged)[0]
-    neighbor_count = tree_copy_.query_radius(data_a[i_].reshape(1, -1), r=dist_enlonged, count_only=True)
-
     neighbor_set_ = data_b[ind_updated_.astype(np.int32).tolist()]
 
-    print("The total number of included neighbor is: {}".format(str(neighbor_count[0])))
+    print("The total number of included neighbor is: {}".format(str(len(neighbor_set_))))
 
     return neighbor_set_
 
 
-def dis_to_surface_():
-    pass
+def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
+    if len(neighbor_set_) <= 2:
+        print("Too less")
+        pass
+    else:
+        neighbor_x_min, neighbor_x_max = np.min(neighbor_set_[:, 0]), np.max(neighbor_set_[:, 0])
+        neighbor_y_min, neighbor_y_max = np.min(neighbor_set_[:, 1]), np.max(neighbor_set_[:, 1])
+
+        dis_fun_ = lambda cor_xy_: np.sqrt((cor_xy_[0] - target_set_[i_][0]) ** 2 + (cor_xy_[1] - target_set_[i_][1]) ** 2)
+
+        cons_ = ({'type': 'eq', 'fun': lambda cor_xy_: func(cor_xy_[0], *para_set_) - cor_xy_[1]},
+                {'type': 'ineq', 'fun': lambda cor_xy_: cor_xy_[0] - neighbor_x_min},
+                {'type': 'ineq', 'fun': lambda cor_xy_: neighbor_x_max - cor_xy_[0]},
+                {'type': 'ineq', 'fun': lambda cor_xy_: cor_xy_[1] - neighbor_y_min},
+                {'type': 'ineq', 'fun': lambda cor_xy_: neighbor_y_max - cor_xy_[1]}
+                )
+        cor_innitial_ = np.array((np.average(neighbor_set_[:, 0]), np.average(neighbor_set_[:, 1])))
+        dist_calculted = minimize(dis_fun_, cor_innitial_, method='SLSQP', constraints=cons_)
+        print('最小值：', dist_calculted.fun)
+        print('最优解：', dist_calculted.x)
+        print('迭代终止是否成功：', dist_calculted.success)
+        print('迭代终止原因：', dist_calculted.message)
+
+        return dist_calculted.fun
 
 
 x = np.linspace(0, 2*np.pi, 500)
@@ -66,14 +86,8 @@ data3, tree_3 = tree_build(x3, y3)
 
 index_num = 300
 
-dist, ind = pickle.loads(tree_2).query(data3[index_num].reshape(1, -1), k=1)
-print(ind)
-print(dist)
-
-
 xxx = neighbor_search_(data3, data2, tree_2, i_=index_num)
-print(len(xxx))
-print(xxx)
+print(type(xxx))
 print(data3[index_num])
 
 ax = plt.gca()
@@ -86,31 +100,14 @@ popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
 print(popt_2, type(popt_2))
 
 error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
-print(np.average(error_2), np.std(error_2), "xxxxxxx")
+print(np.average(error_2), np.std(error_2), "error")
 plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
 
 plt.show()
 
-xxx_min, xxx_max = np.min(xxx[:, 0]), np.max(xxx[:, 0])
-yyy_min, yyy_max = np.min(xxx[:, 1]), np.max(xxx[:, 1])
+dis = dis_to_surface_(xxx, data3, popt_2, i_=index_num)
+print(dis, type(dis))
 
-print(xxx_min, xxx_max, yyy_min, yyy_max)
-
-fun_X = lambda x_x: np.sqrt((x_x[0] - data3[index_num][0])**2 + (x_x[1] - data3[index_num][1])**2)
-
-cons = ({'type': 'eq', 'fun': lambda x_x: -x_x[1] + popt_2[0]*np.sin(x_x[0]) + popt_2[1]}, # xyz=1
-        {'type': 'ineq', 'fun': lambda x_x: x_x[0] - xxx_min},
-        {'type': 'ineq', 'fun': lambda x_x: xxx_max - x_x[0]},
-        {'type': 'ineq', 'fun': lambda x_x: x_x[1] - yyy_min},
-        {'type': 'ineq', 'fun': lambda x_x: yyy_max - x_x[1]}
-       )
-x0 = np.array((np.average(xxx[:, 0]), np.average(xxx[:, 1])))
-res = minimize(fun_X, x0, method='SLSQP', constraints=cons)
-print('最小值：', res.fun)
-print('最优解：',res.x)
-print('迭代终止是否成功：', res.success)
-print('迭代终止原因：', res.message)
-#
 # popt_2, pcov_2 = curve_fit(func, x2, y2)
 # print(popt_2)
 # error_2 = func(x2, *popt_2)-y2
