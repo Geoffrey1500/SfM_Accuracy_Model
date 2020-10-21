@@ -118,7 +118,7 @@ for i_x_i in range(len(data3)):
         dis_var_set.append(dis)
 
 dis_var_set = np.array(dis_var_set)
-print(np.sqrt(np.sum(dis_var_set**2)/len(dis_var_set)))
+print(np.sqrt(np.sum(dis_var_set**2)/len(dis_var_set)), "predict noise")
 print(np.std(dis_var_set), np.average(dis_var_set), len(dis_var_set))
 # print(dis_var_set)
 
