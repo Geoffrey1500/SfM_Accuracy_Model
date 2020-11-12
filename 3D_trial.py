@@ -13,42 +13,42 @@ X, Y = np.meshgrid(X1, Y1)
 R = np.sqrt(X**2 + Y**2)
 Z = np.sin(R)
 
-print(Z)
+X_reshaped = np.reshape(X, (-1, 1))
+Y_reshaped = np.reshape(Y, (-1, 1))
+Z_reshaped = np.reshape(Z, (-1, 1))
+
+data_original = np.hstack((X_reshaped, Y_reshaped, Z_reshaped))
+print(data_original.shape)
+
+print(data_original)
 
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.viridis)
+ax.scatter(X_reshaped.flatten(), Y_reshaped.flatten(), Z_reshaped.flatten(), cmap=cm.viridis)
 
 plt.show()
 
+print("Stop here")
 
-def add_noise(x_, y_, z_, mu_=0, sigma_=0.001):
-    x_internal = x_.copy()
-    y_internal = y_.copy()
-    z_internal = z_.copy()
 
+def add_noise(data_ori, mu_=0, sigma_=0.001):
     mean = (mu_, mu_, mu_)
     cov = [[sigma_, 0, 0], [0, sigma_, 0], [0, 0, sigma_]]
 
-    L_ = np.random.multivariate_normal(mean, cov, len(x_internal))
+    L_ = np.random.multivariate_normal(mean, cov, data_ori.shape[0])
+    data_modified_ = data_ori + L_
 
-    x_internal += L_[:, 0]
-    y_internal += L_[:, 1]
-    z_internal += L_[:, 2]
-
-    return x_internal, y_internal, z_internal
+    return data_modified_
 
 
-def func(x_, a_, b_):
-    return a_*x_ + b_
+def func(x_, y_, a_, b_, c_):
+    return a_*x_ + b_*y_ + c_
 
 
-def tree_build(x_, y_):
-    data_sets_ = np.vstack((x_, y_)).T
-    # print(data_sets_.shape)
-    tree_ = KDTree(data_sets_, leaf_size=10)
+def tree_build(data_):
+    tree_ = KDTree(data_, leaf_size=10)
     tree_save_ = pickle.dumps(tree_)
-    return data_sets_, tree_save_
+    return tree_save_
 
 
 def neighbor_search_(data_a, data_b, tree_b, threshold_value=2, i_=1):
@@ -90,12 +90,35 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
         return dist_calculted.fun
 
 
-x_a, y_a, z_a = add_noise(X, Y, Z, 0, 0.05)
+data_2 = add_noise(data_original, 0, 0.0025)
 
-x_b, y_b, z_b = add_noise(X, Y, Z, 0, 0.001)
+# x_b, y_b, z_b = add_noise(X, Y, Z, 0, 0.001)
 
 fig = plt.figure()
 ax = Axes3D(fig)
-ax.plot_surface(x_a, y_a, z_a, rstride=1, cstride=1, cmap=cm.viridis)
+ax.scatter(data_2[:, 0], data_2[:, 1], data_2[:, 2], c="blue")
 
 plt.show()
+
+for i_x_i in range(len(data3)):
+    xxx = neighbor_search_(data3, data2, tree_2, i_=i_x_i)
+    if len(xxx) <= 2:
+        # print("The total number of neighbors is less than 2")
+        pass
+    else:
+        # ax = plt.gca()
+        # ax.set_aspect(1)
+        # plt.scatter(xxx[:, 0], xxx[:, -1], c="b")
+        # plt.scatter(data3[i_x_i][0], data3[i_x_i][-1], c='r')
+
+        popt_2, pcov_2 = curve_fit(func, xxx[:, 0], xxx[:, -1])
+        # print(popt_2)
+        #
+        # error_2 = func(xxx[:, 0], *popt_2)-xxx[:, -1]
+        # print(np.average(error_2), np.std(error_2), "error")
+        # plt.plot(xxx[:, 0], func(xxx[:, 0], *popt_2), c="black")
+        # plt.show()
+
+        dis = dis_to_surface_(xxx, data3, popt_2, i_=i_x_i)
+        # print(dis, type(dis))
+        dis_var_set.append(dis)
