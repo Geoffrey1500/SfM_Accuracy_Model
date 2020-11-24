@@ -45,7 +45,7 @@ def add_noise(data_ori, mu_=0, sigma_=0.001):
 
 
 def func(data_, a_, b_, c_):
-    return a_*data_[0] + b_*data_[1] + c_
+    return a_*data_[0]**2 + b_*data_[1]**2 + c_
 
 
 def tree_build(data_):
@@ -97,8 +97,8 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
         return dist_calculted.fun
 
 
-data_2 = add_noise(data_original_1, 0, 0.0025)
-data_3 = add_noise(data_original_2, 0, 0.000001)
+data_2 = add_noise(data_original_1, 0, 0.04)
+data_3 = add_noise(data_original_2, 0, 0.00001)
 
 fig = plt.figure()
 ax = Axes3D(fig)

@@ -98,7 +98,7 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
 
 
 data_2 = add_noise(data_original_1, 0, 0.05)
-data_3 = add_noise(data_original_2, 0, 0.001)
+data_3 = add_noise(data_original_2, 0, 0.0005)
 
 # x_b, y_b, z_b = add_noise(X, Y, Z, 0, 0.001)
 
