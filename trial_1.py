@@ -7,32 +7,6 @@ from scipy.optimize import minimize
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-X1 = np.arange(-5, 5, 0.5)
-Y1 = np.arange(-5, 5, 0.5)
-X, Y = np.meshgrid(X1, Y1)
-R = X**2 + Y**2
-Z = 5*R
-
-X_reshaped = np.reshape(X, (-1, 1))
-Y_reshaped = np.reshape(Y, (-1, 1))
-Z_reshaped = np.reshape(Z, (-1, 1))
-
-data_original_1 = np.hstack((X_reshaped, Y_reshaped, Z_reshaped))
-print(data_original_1.shape, "1_size")
-
-X2 = np.arange(-5, 5, 0.05)
-Y2 = np.arange(-5, 5, 0.05)
-X_2, Y_2 = np.meshgrid(X2, Y2)
-R_2 = X_2**2 + Y_2**2
-Z_2 = 5*R_2
-
-X_reshaped_2 = np.reshape(X_2, (-1, 1))
-Y_reshaped_2 = np.reshape(Y_2, (-1, 1))
-Z_reshaped_2 = np.reshape(Z_2, (-1, 1))
-
-data_original_2 = np.hstack((X_reshaped_2, Y_reshaped_2, Z_reshaped_2))
-print(data_original_2.shape, "2 size")
-
 
 def add_noise(data_ori, mu_=0, sigma_=0.001):
     mean = (mu_, mu_, mu_)
@@ -97,9 +71,14 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
         return dist_calculted.fun
 
 
-data_2 = add_noise(data_original_1, 0, 0.05)
-data_3 = add_noise(data_original_2, 0, 0.001)
-
+data_2 = np.loadtxt('4.txt')
+data_3 = np.loadtxt('3.txt')
+print(data_2)
+print(data_3)
+print(data_2.shape)
+print(data_3.shape)
+data_2 = np.delete(data_2, [3, 4, 5], axis=1)
+data_3 = np.delete(data_3, [3, 4, 5], axis=1)
 # x_b, y_b, z_b = add_noise(X, Y, Z, 0, 0.001)
 
 fig = plt.figure()
@@ -146,3 +125,4 @@ print(dis_var_set)
 # print(np.std(dis_var_set), np.average(dis_var_set), len(dis_var_set))
 print(len(dis_var_set)/len(data_2))
 print(np.average(dis_var_set**2), "参数")
+print(np.sqrt(np.average(dis_var_set**2)), "误差")

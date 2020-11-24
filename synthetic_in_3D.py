@@ -9,11 +9,14 @@ from scipy.optimize import minimize
 def add_noise(x_, y_, mu_=0, sigma_=0.001):
     x_internal = x_.copy()
     y_internal = y_.copy()
-    for i_ in range(x_internal.size):
-        L_ = np.random.normal(mu_, sigma_)
-        x_internal[i_] -= L_*np.cos(x_internal[i_])/np.sqrt(np.cos(x_internal[i_])**2 + 1)
-        y_internal[i_] += L_/np.sqrt(np.cos(x_internal[i_])**2 + 1)
-        # print(L_, L_*np.cos(x_internal[i_])/np.sqrt(np.cos(x_internal[i_])**2 + 1), L_/np.sqrt(np.cos(x_internal[i_])**2 + 1))
+
+    mean = (mu_, mu_)
+    cov = [[sigma_, 0], [0, sigma_]]
+
+    L_ = np.random.multivariate_normal(mean, cov, len(x_internal))
+
+    x_internal += L_[:, 0]
+    y_internal += L_[:, 1]
 
     return x_internal, y_internal
 
@@ -27,7 +30,7 @@ def merge_and_fit():
 
 
 def func(x_, a_, b_):
-    return a_*np.sin(x_) + b_
+    return a_*x_ + b_
 
 
 def tree_build(x_, y_):
@@ -81,13 +84,13 @@ x = np.linspace(0, 2*np.pi, 5000)
 y = np.sin(x)
 data1, tree_1 = tree_build(x, y)
 
-x2, y2 = add_noise(x, y, 0, 0.01)
+x2, y2 = add_noise(x, y, 0, 0.0001)
 data2, tree_2 = tree_build(x2, y2)
 
-x_c = np.linspace(0, 2*np.pi, 2000)
+x_c = np.linspace(0, 2*np.pi, 500)
 y_c = np.sin(x_c)
 
-x3, y3 = add_noise(x_c, y_c, 0, 0.3)
+x3, y3 = add_noise(x_c, y_c, 0, 0.03)
 data3, tree_3 = tree_build(x3, y3)
 
 # index_num = 300
@@ -118,7 +121,7 @@ for i_x_i in range(len(data3)):
         dis_var_set.append(dis)
 
 dis_var_set = np.array(dis_var_set)
-print(np.sqrt(np.sum(dis_var_set**2)/len(dis_var_set)))
+print(np.sqrt(np.sum(dis_var_set**2)/len(dis_var_set))/np.sqrt(2), "predict noise")
 print(np.std(dis_var_set), np.average(dis_var_set), len(dis_var_set))
 # print(dis_var_set)
 
@@ -129,7 +132,8 @@ popt_2, pcov_2 = curve_fit(func, x2, y2)
 # print(np.average(error_2), np.std(error_2), perr_2)
 # print(pcov_2)
 popt_8, pcov_8 = curve_fit(func, x3, y3)
-print(popt_8, "参数")
+# print(dis_var_set)
+print(np.average(dis_var_set**2), "参数")
 # print(popt_3)
 # error_3 = func(x3, *popt_2)-y3
 # perr_3 = np.sqrt(np.diag(pcov_3))

@@ -20,15 +20,6 @@ Z_reshaped = np.reshape(Z, (-1, 1))
 data_original_1 = np.hstack((X_reshaped, Y_reshaped, Z_reshaped))
 print(data_original_1.shape, "1_size")
 
-
-fig = plt.figure()
-ax = Axes3D(fig)
-ax.scatter(X_reshaped.flatten(), Y_reshaped.flatten(), Z_reshaped.flatten(), cmap=cm.viridis)
-
-plt.show()
-
-print("Stop here")
-
 X2 = np.arange(-5, 5, 0.05)
 Y2 = np.arange(-5, 5, 0.05)
 X_2, Y_2 = np.meshgrid(X2, Y2)
@@ -109,13 +100,15 @@ def dis_to_surface_(neighbor_set_, target_set_, para_set_, i_=1):
 data_2 = add_noise(data_original_1, 0, 0.0025)
 data_3 = add_noise(data_original_2, 0, 0.000001)
 
-# x_b, y_b, z_b = add_noise(X, Y, Z, 0, 0.001)
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(data_2[:, 0], data_2[:, 1], data_2[:, 2], c="blue")
 
-# fig = plt.figure()
-# ax = Axes3D(fig)
-# ax.scatter(data_2[:, 0], data_2[:, 1], data_2[:, 2], c="blue")
-#
-# plt.show()
+fig = plt.figure()
+ax = Axes3D(fig)
+ax.scatter(data_3[:, 0], data_3[:, 1], data_3[:, 2], c="blue")
+
+plt.show()
 
 dis_var_set = []
 
@@ -139,7 +132,7 @@ for i_x_i in range(len(data_2)):
         # plt.show()
 
         dis = dis_to_surface_(xxx, data_2, popt_2, i_=i_x_i)
-        print(dis)
+        # print(dis)
         # print(dis, type(dis))
         dis_var_set.append(dis)
 
