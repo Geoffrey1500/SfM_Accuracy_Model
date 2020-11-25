@@ -90,7 +90,7 @@ data2, tree_2 = tree_build(x2, y2)
 x_c = np.linspace(0, 2*np.pi, 500)
 y_c = np.sin(x_c)
 
-x3, y3 = add_noise(x_c, y_c, 0, 0.03)
+x3, y3 = add_noise(x_c, y_c, 0, 0.05)
 data3, tree_3 = tree_build(x3, y3)
 
 # index_num = 300
