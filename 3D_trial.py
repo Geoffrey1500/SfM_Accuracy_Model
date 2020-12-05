@@ -108,7 +108,7 @@ fig = plt.figure()
 ax = Axes3D(fig)
 ax.scatter(data_3[:, 0], data_3[:, 1], data_3[:, 2], c="blue")
 
-plt.show()
+# plt.show()
 
 dis_var_set = []
 
